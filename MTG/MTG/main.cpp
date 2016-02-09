@@ -6,6 +6,7 @@
 #include <random>
 #include <time.h>
 #include <map>
+#include <algorithm>
 
 map<unsigned long, Card *> vault;
 
@@ -70,8 +71,8 @@ void startMatch(Player &p1, Player &p2)
 {
     printf("Starting match: %s vs %s\n", p1.name, p2.name);
 
-    shuffle(p1.library, getNumCards((char*)p1.library, MAX_SIZE(p1.library), sizeof(Card*)));
-    shuffle(p2.library, getNumCards((char*)p2.library, MAX_SIZE(p2.library), sizeof(Card*)));
+    std::random_shuffle(p1.library.begin(), p1.library.end());
+    std::random_shuffle(p2.library.begin(), p2.library.end());
 
     drawHand(p1);
     drawHand(p2);
@@ -103,9 +104,6 @@ int main(int argc, char **argv)
     initLibrary(me);
     initDeck(you);
     initLibrary(you);
-
-    printf("%s's deck: %d\n", me.name, getNumCards((char*)me.deck, MAX_SIZE(me.deck), sizeof(int)));
-    printf("%s's deck: %d\n", you.name, getNumCards((char*)you.deck, MAX_SIZE(you.deck), sizeof(int)));
 
     startMatch(me, you);
 

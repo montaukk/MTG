@@ -52,11 +52,11 @@ void printBoard(Player &player, Player &opponent)
 
 void printHand(Player &p, map<unsigned long, Card *> &vault)
 {
-    unsigned long numCardsHand = getNumCards((char*)p.hand, MAX_SIZE(p.hand), sizeof(int));
+    unsigned long numCardsHand = p.hand.size();
     for (int i = 0; i < numCardsHand; i++)
     {
-        Card *c = vault.at(p.hand[i]);
-        printf("(%d)%s\n", i + 1, c->name);
+        Card *c = vault.at(p.hand.at(i));
+        printf("(%d)%s %s\n", i + 1, c->name, c->manaCost ? c->manaCost : "");
     }
 
     printf("\n");
@@ -66,13 +66,13 @@ void printArmy(Player &p)
 {
     char *cardTemplate[] = { " ------------  ", "|%s %s%*s| " , "|%*s| " , "|%*s| ", "|%*s| " , "|%*s| " , " ------------  ", "               " };
     unsigned long cardWidth = strlen("------------");
-    unsigned long numCardsArmy = getNumCards((char*)p.army, MAX_SIZE(p.army), sizeof(Card*));
+    unsigned long numCardsArmy = p.army.size();
 
     for (int i = 0; i < 7; i++)
     {
         for (int j = 0; j < numCardsArmy; j++)
         {
-            Card *c = p.army[j];
+            Card *c = p.army.at(j);
             char buff[100] = { 0 };
             switch (i)
             {
@@ -107,9 +107,9 @@ void printCards(Player &p, cardType type, bool numbered)
     unsigned long cardWidth = strlen("------------");
     unsigned long numCards = 0;
     if (type == land)
-        numCards = getNumCards((char*)p.lands, MAX_SIZE(p.lands), sizeof(Card*));
+        numCards = p.lands.size();
     else if (type == creature)
-        numCards = getNumCards((char*)p.army, MAX_SIZE(p.army), sizeof(Card*));
+        numCards = p.army.size();
 
     for (int i = 0; i < 7 && numCards; i++)
     {
@@ -117,9 +117,9 @@ void printCards(Player &p, cardType type, bool numbered)
         {
             Card *c = NULL;
             if (type == land)
-                c = p.lands[j];
+                c = p.lands.at(j);
             else if (type == creature)
-                c = p.army[j];
+                c = p.army.at(j);
             char buff[100] = { 0 };
             switch (i)
             {

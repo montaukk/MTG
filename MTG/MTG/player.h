@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <map>
+#include <vector>
 #include "cards.h"
 
 using namespace std;
@@ -22,12 +23,12 @@ public:
 
     bool playedLand;
 
-    unsigned long deck[DECK_SIZE];
-    unsigned long library[DECK_SIZE];
-    unsigned long hand[DEFAULT_HAND_SIZE + 3];
-    unsigned long graveyard[DECK_SIZE];
-    Card *army[ARMY_SIZE];
-    Card *lands[LAND_SIZE];
+    std::vector<unsigned long> deck;
+    std::vector<unsigned long> library; 
+    std::vector<unsigned long> hand;
+    std::vector<unsigned long> graveyard;
+    std::vector<Card *> army;
+    std::vector<Card *> lands;
     //    unsigned long tapped[ARMY_SIZE];
 
     Player(char *name);

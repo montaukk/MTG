@@ -24,7 +24,8 @@ void initLibrary(Player &p)
 {
     for (int i = 0; i < DECK_SIZE; i++)
     {
-        p.library[i] = p.deck[i];
+        unsigned long x = p.deck.at(i);
+        p.library.push_back(x);
     }
 }
 
@@ -35,19 +36,19 @@ void initDeck(Player &p)
     {
         //        unsigned long x = (rand() % 5) + 1;
         unsigned long x = (rand() % 3) + 3;
-        p.deck[i] = x;
+        p.deck.push_back(x);
     }
     for (; i < DECK_SIZE; i++)
     {
         unsigned long x = (rand() % 5) + 6;
-        p.deck[i] = x;
+        p.deck.push_back(x);
     }
 }
 
 void drawCard(Player &p)
 {
-    unsigned long numCardsLibrary = getNumCards((char*)p.library, MAX_SIZE(p.library), sizeof(int));
-    unsigned long numCardsHand = getNumCards((char*)p.hand, MAX_SIZE(p.hand), sizeof(int));
+    unsigned long numCardsLibrary = p.library.size();
+    unsigned long numCardsHand = p.hand.size();
 
     if (numCardsLibrary > 0 && numCardsLibrary <= DECK_SIZE)
     {
@@ -58,8 +59,8 @@ void drawCard(Player &p)
     //    numCardsHand--;
     //}
 
-    p.hand[numCardsHand] = p.library[numCardsLibrary];
-    p.library[numCardsLibrary] = 0;
+    p.hand.push_back(p.library.back());
+    p.library.pop_back();
 }
 
 void drawHand(Player &p)
@@ -95,20 +96,21 @@ void playCard(Player &p, map<unsigned long, Card *> &vault)
                 printf("Invalid input\n");
                 return;
             }
-            Card *card = vault.at(p.hand[selection - 1]);
+            Card *card = vault.at(p.hand.at(selection - 1));
 
             // Attempting to play a land
             if (card->type == land && !p.playedLand)
             {
                 printf("Playing %s\n", card->name);
                 p.playedLand = TRUE;
-                unsigned long numCardsLands = getNumCards((char*)p.lands, MAX_SIZE(p.lands), sizeof(Card *));
-                unsigned long numCardsHand = getNumCards((char*)p.hand, MAX_SIZE(p.hand), sizeof(Card*));
+                unsigned long numCardsLands = p.lands.size();
+                unsigned long numCardsHand = p.hand.size();
 
                 Card *beingPlayed = new Card(card);
-                p.lands[numCardsLands] = beingPlayed;
-                SWAP_BACK(p.hand, selection - 1, numCardsHand - 1);
-                p.hand[numCardsHand - 1] = 0;
+                p.lands.push_back(beingPlayed);
+                p.hand.erase(p.hand.begin() + (selection - 1));
+                //SWAP_BACK(p.hand, selection - 1, numCardsHand - 1);
+                //p.hand[numCardsHand - 1] = 0;
             }
             else if (card->type == land) {
                 // Already played a land this turn, can't play 2
@@ -167,15 +169,16 @@ void playCard(Player &p, map<unsigned long, Card *> &vault)
                     p.whiteMana -= whiteManaRequired;
                     p.colorlessMana -= colorlessManaRequired;
 
-                    unsigned long numCardsArmy = getNumCards((char*)p.army, MAX_SIZE(p.army), sizeof(Card*));
-                    unsigned long numCardsHand = getNumCards((char*)p.hand, MAX_SIZE(p.hand), sizeof(int));
+                    unsigned long numCardsArmy = p.army.size();
+                    unsigned long numCardsHand = p.hand.size();
 
                     printf("Can play!\n");
 
                     CreatureCard *beingPlayed = new CreatureCard((CreatureCard*)card);
-                    p.army[numCardsArmy] = beingPlayed;
-                    SWAP_BACK(p.hand, selection - 1, numCardsHand - 1);
-                    p.hand[numCardsHand - 1] = 0;
+                    p.army.push_back(beingPlayed);
+                    p.hand.erase(p.hand.begin() + (selection - 1));
+                    //SWAP_BACK(p.hand, selection - 1, numCardsHand - 1);
+                    //p.hand[numCardsHand - 1] = 0;
 
                 }
                 else {
@@ -205,16 +208,16 @@ void tapMana(Player &p)
             if (1 == sscanf_s(line + i, "%c", &input))
             {
                 int selection = atoi(&input);
-                if (!selection || selection > getNumCards((char*)p.lands, MAX_SIZE(p.lands), sizeof(Card*)))
+                if (!selection || selection > p.lands.size())
                 {
                     printf("Invalid input\n");
                     return;
                 }
 
-                if (!p.lands[selection - 1]->tapped)
+                if (!p.lands.at(selection - 1)->tapped)
                 {
-                    p.lands[selection - 1]->tapped = true;
-                    switch (p.lands[selection - 1]->color)
+                    p.lands.at(selection - 1)->tapped = true;
+                    switch (p.lands.at(selection - 1)->color)
                     {
                     case black:
                         p.blackMana++;
@@ -237,7 +240,7 @@ void tapMana(Player &p)
                     }
                 }
                 else {
-                    printf("%s already tapped!\n", p.lands[i]->name);
+                    printf("%s already tapped!\n", p.lands.at(i)->name);
                 }
             }
         }
@@ -247,14 +250,14 @@ void tapMana(Player &p)
 
 void untapStep(Player &p)
 {
-    unsigned long numCardsArmy = getNumCards((char*)p.army, MAX_SIZE(p.army), sizeof(Card*));
-    unsigned long numCardsLands = getNumCards((char*)p.lands, MAX_SIZE(p.lands), sizeof(Card*));
+    unsigned long numCardsArmy = p.army.size();
+    unsigned long numCardsLands = p.army.size();
     for (int i = 0; i < numCardsArmy; i++)
     {
-        p.army[i]->tapped = false;
+        p.army.at(i)->tapped = false;
     }
     for (int i = 0; i < numCardsLands; i++)
     {
-        p.lands[i]->tapped = false;
+        p.lands.at(i)->tapped = false;
     }
 }
