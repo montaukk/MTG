@@ -52,7 +52,7 @@ void printBoard(Player &player, Player &opponent)
 
 void printHand(Player &p, map<unsigned long, Card *> &vault)
 {
-    unsigned long numCardsHand = p.hand.size();
+    unsigned long numCardsHand = p.hand._size();
     for (int i = 0; i < numCardsHand; i++)
     {
         Card *c = vault.at(p.hand.at(i));
@@ -66,7 +66,7 @@ void printArmy(Player &p)
 {
     char *cardTemplate[] = { " ------------  ", "|%s %s%*s| " , "|%*s| " , "|%*s| ", "|%*s| " , "|%*s| " , " ------------  ", "               " };
     unsigned long cardWidth = strlen("------------");
-    unsigned long numCardsArmy = p.army.size();
+    unsigned long numCardsArmy = p.army._size();
 
     for (int i = 0; i < 7; i++)
     {
@@ -107,9 +107,9 @@ void printCards(Player &p, cardType type, bool numbered)
     unsigned long cardWidth = strlen("------------");
     unsigned long numCards = 0;
     if (type == land)
-        numCards = p.lands.size();
+        numCards = p.lands._size();
     else if (type == creature)
-        numCards = p.army.size();
+        numCards = p.army._size();
 
     for (int i = 0; i < 7 && numCards; i++)
     {

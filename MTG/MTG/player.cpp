@@ -1,7 +1,8 @@
 #include "player.h"
 
 Player::Player(char *name)
-    : name(name), blackMana(0), blueMana(0), greenMana(0), redMana(0), whiteMana(0), colorlessMana(0), playedLand(0)
+    : name(name), blackMana(0), blueMana(0), greenMana(0), redMana(0), whiteMana(0), colorlessMana(0), playedLand(0), 
+    deck(DECK_SIZE), library(DECK_SIZE), hand(DEFAULT_HAND_SIZE), graveyard(DECK_SIZE), army(ARMY_SIZE), lands(LAND_SIZE)
 {
     health = 20;
 }

@@ -3,6 +3,7 @@
 #include "cards.h"
 #include "player.h"
 #include "display.h"
+#include "cardContainer.h"
 #include <random>
 #include <time.h>
 #include <map>
@@ -71,13 +72,13 @@ void startMatch(Player &p1, Player &p2)
 {
     printf("Starting match: %s vs %s\n", p1.name, p2.name);
 
-    std::random_shuffle(p1.library.begin(), p1.library.end());
-    std::random_shuffle(p2.library.begin(), p2.library.end());
+    p1.library.shuffle();
+    p2.library.shuffle();
 
     drawHand(p1);
     drawHand(p2);
 
-    while (true)
+    while (p1.health > 0 && p2.health > 0)
     {
         takeTurn(p1, p2);
         takeTurn(p2, p1);

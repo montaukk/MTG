@@ -22,10 +22,9 @@ unsigned long getNumCards(char *arr, unsigned int arrSize, unsigned int dataSize
 
 void initLibrary(Player &p)
 {
-    for (int i = 0; i < DECK_SIZE; i++)
+    for (int i = 0; i < p.deck._size(); i++)
     {
-        unsigned long x = p.deck.at(i);
-        p.library.push_back(x);
+        p.library.add(p.deck.at(i));
     }
 }
 
@@ -36,31 +35,32 @@ void initDeck(Player &p)
     {
         //        unsigned long x = (rand() % 5) + 1;
         unsigned long x = (rand() % 3) + 3;
-        p.deck.push_back(x);
+        p.deck.add(x);
     }
     for (; i < DECK_SIZE; i++)
     {
         unsigned long x = (rand() % 5) + 6;
-        p.deck.push_back(x);
+        p.deck.add(x);
     }
 }
 
 void drawCard(Player &p)
 {
-    unsigned long numCardsLibrary = p.library.size();
-    unsigned long numCardsHand = p.hand.size();
+    unsigned long numCardsLibrary = p.library._size();
+    unsigned long numCardsHand = p.hand._size();
 
     if (numCardsLibrary > 0 && numCardsLibrary <= DECK_SIZE)
     {
         numCardsLibrary--;
     }
-    //if (numCardsHand > 0 && numCardsHand <= DEFAULT_HAND_SIZE)
-    //{
-    //    numCardsHand--;
-    //}
+    /* TODO: reinable hand size when done testing
+    if (numCardsHand > 0 && numCardsHand <= DEFAULT_HAND_SIZE)
+    {
+        numCardsHand--;
+    }
+    */
 
-    p.hand.push_back(p.library.back());
-    p.library.pop_back();
+    p.hand.drawFrom(p.library);
 }
 
 void drawHand(Player &p)
@@ -78,6 +78,38 @@ void shuffle(unsigned long *library, unsigned int size)
     }
 }
 
+void calculateManaCost(char *cost, unsigned long manaCostLen, ManaCost *requiredMana)
+{
+    int i = 0;
+    if (atoi(cost))
+    {
+        requiredMana->colorless += atoi(cost);
+        requiredMana->converted += atoi(cost);
+        i++;
+    }
+    for (; i < manaCostLen; i++)
+    {
+        switch (*(cost + i))
+        {
+        case 'B':
+            requiredMana->black++;
+            break;
+        case 'U':
+            requiredMana->blue++;
+            break;
+        case 'G':
+            requiredMana->green++;
+            break;
+        case 'R':
+            requiredMana->red++;
+            break;
+        case 'W':
+            requiredMana->white++;
+            break;
+        }
+        requiredMana->converted++;
+    }
+}
 
 void playCard(Player &p, map<unsigned long, Card *> &vault)
 {
@@ -103,12 +135,12 @@ void playCard(Player &p, map<unsigned long, Card *> &vault)
             {
                 printf("Playing %s\n", card->name);
                 p.playedLand = TRUE;
-                unsigned long numCardsLands = p.lands.size();
-                unsigned long numCardsHand = p.hand.size();
+                unsigned long numCardsLands = p.lands._size();
+                unsigned long numCardsHand = p.hand._size();
 
                 Card *beingPlayed = new Card(card);
-                p.lands.push_back(beingPlayed);
-                p.hand.erase(p.hand.begin() + (selection - 1));
+                p.lands.add(beingPlayed);
+                p.hand.remove(p.hand._begin() + (selection - 1));
                 //SWAP_BACK(p.hand, selection - 1, numCardsHand - 1);
                 //p.hand[numCardsHand - 1] = 0;
             }
@@ -119,74 +151,40 @@ void playCard(Player &p, map<unsigned long, Card *> &vault)
             else {
                 // Attempting to play non land card
                 printf("Requires %s mana\n", card->manaCost ? card->manaCost : "no");
-                unsigned long blackManaRequired = 0;
-                unsigned long blueManaRequired = 0;
-                unsigned long greenManaRequired = 0;
-                unsigned long redManaRequired = 0;
-                unsigned long whiteManaRequired = 0;
-                unsigned long colorlessManaRequired = 0;
 
-                unsigned long manaCostLen = strlen(card->manaCost);
+                ManaCost cost = { 0 };
+                calculateManaCost(card->manaCost, strlen(card->manaCost), &cost);
 
-                for (int i = 0; i < manaCostLen; i++)
+                // TODO: Figure out how to recognize colorless mana...
+                if (p.blackMana >= cost.black &&
+                    p.blueMana >= cost.blue &&
+                    p.greenMana >= cost.green &&
+                    p.redMana >= cost.red &&
+                    p.whiteMana >= cost.white &&
+                    p.colorlessMana >= cost.colorless)
                 {
-                    char ch = *(card->manaCost + i);
-                    switch (ch)
-                    {
-                    case 'B':
-                        blackManaRequired++;
-                        break;
-                    case 'U':
-                        blueManaRequired++;
-                        break;
-                    case 'G':
-                        greenManaRequired++;
-                        break;
-                    case 'R':
-                        redManaRequired++;
-                        break;
-                    case 'W':
-                        whiteManaRequired++;
-                        break;
-                    default:
-                        char buff[2] = { 0 };
-                        buff[0] = ch;
-                        if (atoi(buff))
-                            colorlessManaRequired = atoi(buff);
-                    }
-                }
-                if (p.blackMana >= blackManaRequired &&
-                    p.blueMana >= blueManaRequired &&
-                    p.greenMana >= greenManaRequired &&
-                    p.redMana >= redManaRequired &&
-                    p.whiteMana >= whiteManaRequired &&
-                    p.colorlessMana >= colorlessManaRequired)
-                {
-                    p.blackMana -= blackManaRequired;
-                    p.blueMana -= blueManaRequired;
-                    p.greenMana -= greenManaRequired;
-                    p.redMana -= redManaRequired;
-                    p.whiteMana -= whiteManaRequired;
-                    p.colorlessMana -= colorlessManaRequired;
+                    p.blackMana -= cost.black;
+                    p.blueMana -= cost.blue;
+                    p.greenMana -= cost.green;
+                    p.redMana -= cost.red;
+                    p.whiteMana -= cost.white;
+                    p.colorlessMana -= cost.colorless;
 
-                    unsigned long numCardsArmy = p.army.size();
-                    unsigned long numCardsHand = p.hand.size();
+                    unsigned long numCardsArmy = p.army._size();
+                    unsigned long numCardsHand = p.hand._size();
 
                     printf("Can play!\n");
 
                     CreatureCard *beingPlayed = new CreatureCard((CreatureCard*)card);
-                    p.army.push_back(beingPlayed);
-                    p.hand.erase(p.hand.begin() + (selection - 1));
-                    //SWAP_BACK(p.hand, selection - 1, numCardsHand - 1);
-                    //p.hand[numCardsHand - 1] = 0;
-
+                    p.army.add(beingPlayed);
+                    p.hand.remove(p.hand._begin() + (selection - 1));
                 }
                 else {
                     printf("Which cards will you tap for mana?\n");
                     printCards(p, land);
 
 
-                    printf("CANNOT PLAY THIS CARD!!\n");
+                    printf("Insufficient Mana!!\n");
                 }
             }
         }
@@ -208,7 +206,7 @@ void tapMana(Player &p)
             if (1 == sscanf_s(line + i, "%c", &input))
             {
                 int selection = atoi(&input);
-                if (!selection || selection > p.lands.size())
+                if (!selection || selection > p.lands._size())
                 {
                     printf("Invalid input\n");
                     return;
@@ -238,6 +236,7 @@ void tapMana(Player &p)
                         p.colorlessMana++;
                         break;
                     }
+                    p.convertedMana++;
                 }
                 else {
                     printf("%s already tapped!\n", p.lands.at(i)->name);
@@ -250,8 +249,8 @@ void tapMana(Player &p)
 
 void untapStep(Player &p)
 {
-    unsigned long numCardsArmy = p.army.size();
-    unsigned long numCardsLands = p.army.size();
+    unsigned long numCardsArmy = p.army._size();
+    unsigned long numCardsLands = p.army._size();
     for (int i = 0; i < numCardsArmy; i++)
     {
         p.army.at(i)->tapped = false;

@@ -5,6 +5,18 @@
 #include "creatureCard.h"
 #include "player.h"
 #include "display.h"
+#include "cardContainer.h"
+
+struct ManaCost
+{
+    unsigned long black;
+    unsigned long blue;
+    unsigned long green;
+    unsigned long red;
+    unsigned long white;
+    unsigned long colorless;
+    unsigned long converted;
+};
 
 unsigned long getNumCards(char *, unsigned int, unsigned int);
 void initLibrary(class Player &p);

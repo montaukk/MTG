@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include "cards.h"
+#include "cardContainer.h"
 
 using namespace std;
 
@@ -12,7 +13,7 @@ class Player
 public:
     char *name;
 
-    unsigned long health;
+    long health;
 
     unsigned long blackMana;
     unsigned long blueMana;
@@ -20,16 +21,16 @@ public:
     unsigned long redMana;
     unsigned long whiteMana;
     unsigned long colorlessMana;
+    unsigned long convertedMana;
 
     bool playedLand;
 
-    std::vector<unsigned long> deck;
-    std::vector<unsigned long> library; 
-    std::vector<unsigned long> hand;
-    std::vector<unsigned long> graveyard;
-    std::vector<Card *> army;
-    std::vector<Card *> lands;
-    //    unsigned long tapped[ARMY_SIZE];
+    cardContainer<unsigned long> deck;
+    cardContainer<unsigned long> library;
+    cardContainer<unsigned long> hand;
+    cardContainer<unsigned long> graveyard;
+    cardContainer<Card *> army;
+    cardContainer<Card *> lands;
 
     Player(char *name);
 
